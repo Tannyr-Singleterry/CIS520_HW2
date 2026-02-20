@@ -49,8 +49,22 @@ bool round_robin(dyn_array_t *ready_queue, ScheduleResult_t *result, size_t quan
 
 dyn_array_t *load_process_control_blocks(const char *input_file) 
 {
-	UNUSED(input_file);
-	return NULL;
+	if(input_file == NULL)
+		return NULL;
+	char* badChars = "\n\t\r\v\f";
+	for(int i = 0; i < 32; i++)
+	{
+		if(input_file[i] == '\0')
+			breal;
+		for(int j = 0; j < 5; j++0
+			if(input_file[i] == badChars[j])
+				return NULL;
+	}
+
+	FILE* file = fopen(input_file, "rb");
+	if(!file)
+		return NULL;
+	
 }
 
 bool shortest_remaining_time_first(dyn_array_t *ready_queue, ScheduleResult_t *result) 
