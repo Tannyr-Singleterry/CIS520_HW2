@@ -7,7 +7,7 @@
 // Using a C library requires extern "C" to prevent function mangling
 extern "C"
 {
-#include <dyn_array.h>
+#include "dyn_array.h"
 }
 
 #define NUM_PCB 30
