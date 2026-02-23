@@ -25,8 +25,8 @@ ProcessControlBlock_t make_pcb(uint32_t arrival, uint32_t burst) {
 }
 
 /*
- Test 1:
- Basic FCFS ordering with two processes arriving at time 0
+Test 1:
+Basic FCFS ordering with two processes arriving at time 0
 */
 TEST(FCFS_Test, TwoProcessesBasicOrder) {
     dyn_array_t* queue = dyn_array_create(0, sizeof(ProcessControlBlock_t), nullptr);
@@ -41,16 +41,16 @@ TEST(FCFS_Test, TwoProcessesBasicOrder) {
 
     ASSERT_TRUE(first_come_first_serve(queue, &result));
 
-    // Waiting times:
-    // first = 0
-    // second = 4
-    // avg = 2.0
+    //Waiting times:
+    //first = 0
+    //second = 4
+    //avg = 2.0
     EXPECT_FLOAT_EQ(result.average_waiting_time, 2.0f);
 
-    // Turnaround:
-    // first = 4
-    // second = 7
-    // avg = 5.5
+    //Turnaround:
+    //first = 4
+    //second = 7
+    //avg = 5.5
     EXPECT_FLOAT_EQ(result.average_turnaround_time, 5.5f);
 
     EXPECT_EQ(result.total_run_time, 7);
@@ -59,8 +59,8 @@ TEST(FCFS_Test, TwoProcessesBasicOrder) {
 }
 
 /*
- Test 2:
- Idle time before first process arrives
+Test 2:
+Idle time before first process arrives
 */
 TEST(FCFS_Test, IdleBeforeStart) {
     dyn_array_t* queue = dyn_array_create(0, sizeof(ProcessControlBlock_t), nullptr);
