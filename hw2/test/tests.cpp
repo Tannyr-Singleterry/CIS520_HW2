@@ -32,7 +32,6 @@ TEST(FCFS_Test, TwoProcessesBasicOrder) {
     dyn_array_t* queue = dyn_array_create(0, sizeof(ProcessControlBlock_t), nullptr);
     ScheduleResult_t result;
 
-	.
     ProcessControlBlock_t second = make_pcb(0, 3); // runs second
     ProcessControlBlock_t first  = make_pcb(0, 4); // runs first
 
@@ -53,7 +52,7 @@ TEST(FCFS_Test, TwoProcessesBasicOrder) {
     //avg = 5.5
     EXPECT_FLOAT_EQ(result.average_turnaround_time, 5.5f);
 
-    EXPECT_EQ(result.total_run_time, 7);
+    EXPECT_EQ(result.total_run_time, 7UL);
 
     dyn_array_destroy(queue);
 }
@@ -77,7 +76,7 @@ TEST(FCFS_Test, IdleBeforeStart) {
     EXPECT_FLOAT_EQ(result.average_turnaround_time, 3.0f);
 
     //CPU finishes at time 8
-    EXPECT_EQ(result.total_run_time, 8);
+    EXPECT_EQ(result.total_run_time, 8UL);
 
     dyn_array_destroy(queue);
 }
