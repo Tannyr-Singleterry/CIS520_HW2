@@ -19,18 +19,16 @@ target_include_directories(dyn_array PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 
 # Create library from dyn_array so we can use it later
+add_library(process_scheduling src/process_scheduling.c)
+target_include_directories(process_scheduling PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(process_scheduling PRIVATE dyn_array)
 
-
-# Compile the analysis executable
+# analysis executable
 add_executable(analysis src/analysis.c)
+target_include_directories(analysis PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(analysis PRIVATE process_scheduling dyn_array)
 
-# link the dyn_array library we compiled against our analysis executable
-target_link_libraries(analysis PRIVATE dyn_array)
-
-# Compile the tester executable
+# test executable
 add_executable(${PROJECT_NAME}_test test/tests.cpp)
-
-target_compile_definitions(${PROJECT_NAME}_test PRIVATE)
-
-# Link ${PROJECT_NAME}_test with dyn_array and gtest and pthread libraries
-target_link_libraries(${PROJECT_NAME}_test gtest pthread dyn_array)
+target_include_directories(${PROJECT_NAME}_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(${PROJECT_NAME}_test gtest pthread process_scheduling dyn_array)
