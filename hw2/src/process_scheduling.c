@@ -67,18 +67,111 @@ bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result)
 	return true;
 }
 
+int cmp_butrs_time(const void* pcb1, const void* pcb2)
+{
+	ProcessControlBlock_t* a = (ProcessControlBlock_t*)pcb1;
+	ProcessControlBlock_t* b = (ProcessControlBlock_t*)pcb2;
+	return a->remaining_burst_time - b->remaining_burst_time;
+
+}
+
 bool shortest_job_first(dyn_array_t *ready_queue, ScheduleResult_t *result) 
 {
-	(void)(ready_queue);
-	(void)(result);
-	return false;
+	if(ready_queue == NULL || result == NULL)
+		return false;
+
+	size_t n = dyn_array_size(ready_queue);
+	if(n == 0)
+		return false;
+	if(!dyn_array_sort(ready_queue, cmp_burst_time))
+		return false;
+
+	result->average_waiting_time = 0.0f;
+	result->average_turnaround_time = 0.0f;
+	result->total_run_time = 0;
+
+	float total_wiating_time = 0.0f;
+	float total_turnarount_time = 0.0f;
+	unsigned long current_time;
+
+	for(size_t i = 0; i < n; i++)
+	{
+		ProcessControlBlock_t pcb;
+		if(!dyn_array_extract_front(ready_queue, &pcb))
+			return false;
+		if(current_time < (unsigned long)pcb.arrival)
+			currnet_time = (unsigned long)pcb.arrival;
+		total_waiting_time += (float)(current_time - pcb.arrival);
+		while(pcb.remaining_burst_time > 0)
+		{
+			virtual_cpu(&pcb);
+			current_time++;
+		}
+		total_turnaround_time += (float)(current_time - pcb.arrival);
+	}
+	result->total_run_time = current_time;
+	result->average_waiting_time = total_waiting_time/n;
+	result->average_turnaroung_time = total_turnaround_time/n;
+	return true;
+}
+
+int cmp_priority(const void* pcb1, const void* pcb2)
+{
+	ProcessControlBlock_t* a = (ProcessControlBlock_t*)pcb1;
+	ProcessControlBlock_t* b = (ProcessControlBlock_t*)pcb2;
+	return a->priotiry - b->priority;
 }
 
 bool priority(dyn_array_t *ready_queue, ScheduleResult_t *result) 
 {
-	(void)(ready_queue);
-	(void)(result);
-	return false;
+	//checks valid params
+	if(ready_queue == NULL || result == NULL)
+		return false;
+	//clearing results
+	result->average_waiting_time = 0.0f;
+	result->average_turnaround_time = 0.0f;
+	result->total_run_time = 0;
+
+	//setting up tracking vars
+	float total_waiting_time = 0.0f;
+	float total_turnaround_time = 0.0f;
+	unsigned long current_time = 0;
+
+	size_t n = dyn_array_size(ready_queue); // number of processes
+
+	//checking that there are processes and setting up dyn_array
+	if(n = 0)
+		return false;
+	if(!dyn_array_sort(ready_queue, cmp_priority))
+		return false;
+
+	//processing
+	for(size_t i = 0; i < n; i++)
+	{
+		ProcessControlBlock_t pcb;
+		if(!dyn_array_extract_front(ready_quese, &pcb))
+			return false;
+
+
+		if(current_time < (unsigned long)pcb.arrival)
+			current_time = pcb.arrival;
+
+		total_waiting_time += (float)(current_time-pcb.arrival);
+
+
+		while(pcb.remaining_burst_time > 0)
+		{
+			virtual_cpu(&pcb);
+			current_time++;
+		}
+
+		total_turnaround_time += (float)(current_time-pcb.arrival);
+	}
+
+	result->total_run_time = current_time;
+	result->average_waiting_time = total_waiting_time/n;
+	result->average_turnaround_time = total_turnaround_time/n;
+	return true;
 }
 
 bool round_robin(dyn_array_t *ready_queue, ScheduleResult_t *result, size_t quantum) 
