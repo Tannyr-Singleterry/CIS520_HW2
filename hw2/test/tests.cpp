@@ -25,6 +25,18 @@ ProcessControlBlock_t make_pcb(uint32_t arrival, uint32_t burst) {
 }
 
 /*
+ Helper function for priority
+*/
+ProcessControlBlock_t make_pcb_priority(uint32_t arrival, uint32_t burst, uint32_t prio) {
+    ProcessControlBlock_t pcb;
+    pcb.arrival = arrival;
+    pcb.remaining_burst_time = burst;
+    pcb.priority = prio;
+    pcb.started = false;
+    return pcb;
+}
+
+/*
 Test 1:
 Basic FCFS ordering with two processes arriving at time 0
 */
@@ -141,6 +153,175 @@ TEST(LoadPCB_Test, ValidFileLoadsCorrectly)
     dyn_array_destroy(pcbs);
     remove(input_filename);
 }
+
+/*
+Test 5:
+Null inputs to SJF return false
+*/
+TEST(SJF_Test, NullInputs) {
+    ScheduleResult_t result;
+
+    EXPECT_EQ(false, shortest_job_first(NULL, &result));
+
+    dyn_array_t* queue = dyn_array_create(0, sizeof(ProcessControlBlock_t), nullptr);
+    ProcessControlBlock_t pcb = make_pcb(0, 4);
+    dyn_array_push_back(queue, &pcb);
+
+    EXPECT_EQ(false, shortest_job_first(queue, NULL));
+
+    dyn_array_destroy(queue);
+}
+
+/*
+Test 6:
+SJF schedules shortest burst first regardless of insertion order
+*/
+TEST(SJF_Test, ShortestBurstRunsFirst) {
+    dyn_array_t* queue = dyn_array_create(0, sizeof(ProcessControlBlock_t), nullptr);
+    ScheduleResult_t result;
+
+    ProcessControlBlock_t longer  = make_pcb(0, 6); // runs second
+    ProcessControlBlock_t shorter = make_pcb(0, 3); // runs first
+
+    dyn_array_push_back(queue, &longer);
+    dyn_array_push_back(queue, &shorter);
+
+    ASSERT_TRUE(shortest_job_first(queue, &result));
+
+    EXPECT_FLOAT_EQ(result.average_waiting_time,    1.5f);
+    EXPECT_FLOAT_EQ(result.average_turnaround_time, 6.0f);
+    EXPECT_EQ(result.total_run_time, 9UL);
+
+    dyn_array_destroy(queue);
+}
+
+/*
+Test 7:
+Null inputs to priority return false
+*/
+TEST(Priority_Test, NullInputs) {
+    ScheduleResult_t result;
+
+    EXPECT_EQ(false, priority(NULL, &result));
+
+    dyn_array_t* queue = dyn_array_create(0, sizeof(ProcessControlBlock_t), nullptr);
+    ProcessControlBlock_t pcb = make_pcb_priority(0, 4, 1);
+    dyn_array_push_back(queue, &pcb);
+
+    EXPECT_EQ(false, priority(queue, NULL));
+
+    dyn_array_destroy(queue);
+}
+
+/*
+Test 8:
+Priority schedules lowest priority number first (highest priority)
+*/
+TEST(Priority_Test, HighestPriorityRunsFirst) {
+    dyn_array_t* queue = dyn_array_create(0, sizeof(ProcessControlBlock_t), nullptr);
+    ScheduleResult_t result;
+
+    ProcessControlBlock_t low_prio  = make_pcb_priority(0, 4, 2); // runs second
+    ProcessControlBlock_t high_prio = make_pcb_priority(0, 3, 1); // runs first
+
+    dyn_array_push_back(queue, &low_prio);
+    dyn_array_push_back(queue, &high_prio);
+
+    ASSERT_TRUE(priority(queue, &result));
+
+    EXPECT_FLOAT_EQ(result.average_waiting_time,    1.5f);
+    EXPECT_FLOAT_EQ(result.average_turnaround_time, 5.0f);
+    EXPECT_EQ(result.total_run_time, 7UL);
+
+    dyn_array_destroy(queue);
+}
+
+/*
+Test 9:
+Null inputs or zero quantum to round_robin return false
+*/
+TEST(RR_Test, NullOrZeroInputs) {
+    ScheduleResult_t result;
+
+    // null queue
+    EXPECT_EQ(false, round_robin(NULL, &result, QUANTUM));
+
+    // null result
+    dyn_array_t* queue = dyn_array_create(0, sizeof(ProcessControlBlock_t), nullptr);
+    ProcessControlBlock_t pcb = make_pcb(0, 4);
+    dyn_array_push_back(queue, &pcb);
+    EXPECT_EQ(false, round_robin(queue, NULL, QUANTUM));
+
+    // zero quantum
+    EXPECT_EQ(false, round_robin(queue, &result, 0));
+
+    dyn_array_destroy(queue);
+}
+
+/*
+Test 10:
+Round robin with quantum=2 and two processes
+*/
+TEST(RR_Test, TwoProcessesBasicQuantum) {
+    dyn_array_t* queue = dyn_array_create(0, sizeof(ProcessControlBlock_t), nullptr);
+    ScheduleResult_t result;
+
+    ProcessControlBlock_t p0 = make_pcb(0, 4);
+    ProcessControlBlock_t p1 = make_pcb(0, 3);
+
+    dyn_array_push_back(queue, &p0);
+    dyn_array_push_back(queue, &p1);
+
+    ASSERT_TRUE(round_robin(queue, &result, 2));
+
+    EXPECT_FLOAT_EQ(result.average_waiting_time,    1.0f);
+    EXPECT_FLOAT_EQ(result.average_turnaround_time, 6.5f);
+    EXPECT_EQ(result.total_run_time, 7UL);
+
+    dyn_array_destroy(queue);
+}
+
+/*
+Test 11:
+Null inputs to shortest_remaining_time_first return false
+*/
+TEST(SRTF_Test, NullInputs) {
+    ScheduleResult_t result;
+
+    EXPECT_EQ(false, shortest_remaining_time_first(NULL, &result));
+
+    dyn_array_t* queue = dyn_array_create(0, sizeof(ProcessControlBlock_t), nullptr);
+    ProcessControlBlock_t pcb = make_pcb(0, 4);
+    dyn_array_push_back(queue, &pcb);
+
+    EXPECT_EQ(false, shortest_remaining_time_first(queue, NULL));
+
+    dyn_array_destroy(queue);
+}
+
+/*
+Test 12:
+SRTF preempts a longer process when a shorter one arrives
+*/
+TEST(SRTF_Test, PreemptsOnShorterArrival) {
+    dyn_array_t* queue = dyn_array_create(0, sizeof(ProcessControlBlock_t), nullptr);
+    ScheduleResult_t result;
+
+    ProcessControlBlock_t p0 = make_pcb(0, 6); // longer, gets preempted
+    ProcessControlBlock_t p1 = make_pcb(2, 2); // shorter, arrives later and preempts
+
+    dyn_array_push_back(queue, &p0);
+    dyn_array_push_back(queue, &p1);
+
+    ASSERT_TRUE(shortest_remaining_time_first(queue, &result));
+
+    EXPECT_FLOAT_EQ(result.average_waiting_time,    0.0f);
+    EXPECT_FLOAT_EQ(result.average_turnaround_time, 5.0f);
+    EXPECT_EQ(result.total_run_time, 8UL);
+
+    dyn_array_destroy(queue);
+}
+
 /*
 unsigned int score;
 unsigned int total;
