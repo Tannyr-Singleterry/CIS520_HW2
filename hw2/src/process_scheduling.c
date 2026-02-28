@@ -92,7 +92,7 @@ bool shortest_job_first(dyn_array_t *ready_queue, ScheduleResult_t *result)
 
 	float total_waiting_time = 0.0f;
 	float total_turnaround_time = 0.0f;
-	unsigned long current_time;
+	unsigned long current_time = 0;
 
 	for(size_t i = 0; i < n; i++)
 	{

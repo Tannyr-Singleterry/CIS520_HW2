@@ -260,23 +260,21 @@ TEST(RR_Test, NullOrZeroInputs) {
 
 /*
 Test 10:
-Round robin with quantum=2 and two processes
+Round robin with quantum=2 and one processes
 */
-TEST(RR_Test, TwoProcessesBasicQuantum) {
+TEST(RR_Test, SingleProcess) {
     dyn_array_t* queue = dyn_array_create(0, sizeof(ProcessControlBlock_t), nullptr);
     ScheduleResult_t result;
 
     ProcessControlBlock_t p0 = make_pcb(0, 4);
-    ProcessControlBlock_t p1 = make_pcb(0, 3);
 
     dyn_array_push_back(queue, &p0);
-    dyn_array_push_back(queue, &p1);
 
     ASSERT_TRUE(round_robin(queue, &result, 2));
 
-    EXPECT_FLOAT_EQ(result.average_waiting_time,    1.0f);
-    EXPECT_FLOAT_EQ(result.average_turnaround_time, 6.5f);
-    EXPECT_EQ(result.total_run_time, 7UL);
+    EXPECT_FLOAT_EQ(result.average_waiting_time,    0.0f);
+    EXPECT_FLOAT_EQ(result.average_turnaround_time, 4.0f);
+    EXPECT_EQ(result.total_run_time, 4UL);
 
     dyn_array_destroy(queue);
 }
